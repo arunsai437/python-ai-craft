@@ -22,6 +22,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          glow: "hsl(var(--primary-glow))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -30,6 +31,12 @@ export default {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+          glow: "hsl(var(--destructive-glow))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+          glow: "hsl(var(--success-glow))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -57,6 +64,17 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      backgroundImage: {
+        'gradient-ai': 'var(--gradient-ai)',
+        'gradient-neural': 'var(--gradient-neural)',
+        'gradient-authentic': 'var(--gradient-authentic)',
+        'gradient-fake': 'var(--gradient-fake)',
+      },
+      boxShadow: {
+        'glow-ai': 'var(--glow-ai)',
+        'glow-authentic': 'var(--glow-authentic)',
+        'glow-fake': 'var(--glow-fake)',
       },
       borderRadius: {
         lg: "var(--radius)",
