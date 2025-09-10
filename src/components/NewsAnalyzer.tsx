@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle, AlertTriangle, Brain, ThumbsUp, ThumbsDown, Database, History, Eye, EyeOff } from "lucide-react";
 
@@ -158,72 +159,100 @@ const NewsAnalyzer = () => {
             </Button>
 
             {result && (
-              <Card className={`border-2 ${
-                result.prediction === 'authentic' 
-                  ? 'border-success bg-success/5' 
-                  : 'border-destructive bg-destructive/5'
-              }`}>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      {getResultIcon()}
-                      <div>
-                        <h3 className="text-xl font-bold capitalize text-foreground">
-                          {result.prediction} News
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Confidence: {result.confidence}%
+              <div className="space-y-4">
+                {/* Main Result Alert */}
+                <Alert 
+                  variant={result.prediction === 'authentic' ? 'default' : 'destructive'}
+                  className={result.prediction === 'authentic' 
+                    ? 'border-success bg-success/5 [&>svg]:text-success' 
+                    : 'border-destructive bg-destructive/5 [&>svg]:text-destructive'
+                  }
+                >
+                  {getResultIcon()}
+                  <AlertTitle className="text-xl font-bold capitalize">
+                    {result.prediction} News Detected
+                  </AlertTitle>
+                  <AlertDescription className="mt-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm">
+                        Our AI analysis indicates this news is <strong>{result.prediction}</strong> with <strong>{result.confidence}% confidence</strong>
+                      </span>
+                      <Badge 
+                        variant={result.prediction === 'authentic' ? 'default' : 'destructive'}
+                        className={result.prediction === 'authentic' 
+                          ? 'bg-success text-success-foreground' 
+                          : 'bg-destructive text-destructive-foreground'
+                        }
+                      >
+                        {result.confidence}% Confidence
+                      </Badge>
+                    </div>
+                    
+                    {/* Analysis Factors */}
+                    <div className="mb-4">
+                      <h4 className="font-semibold mb-2">Analysis Factors:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {result.keyFactors.map((factor, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {factor}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Feedback Section */}
+                    <div className="pt-4 border-t border-border">
+                      <h4 className="font-semibold mb-3">Was this analysis correct?</h4>
+                      <div className="flex gap-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => provideFeedback('correct')}
+                          className="flex items-center gap-2 hover:bg-success/10 hover:border-success"
+                        >
+                          <ThumbsUp className="w-4 h-4" />
+                          Correct
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => provideFeedback('incorrect')}
+                          className="flex items-center gap-2 hover:bg-destructive/10 hover:border-destructive"
+                        >
+                          <ThumbsDown className="w-4 h-4" />
+                          Incorrect
+                        </Button>
+                      </div>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+
+                {/* Original Article Data */}
+                <Alert variant="default" className="bg-background/50 border-border">
+                  <Database className="w-4 h-4" />
+                  <AlertTitle>Original Article Data</AlertTitle>
+                  <AlertDescription className="mt-2">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          Status: {result.prediction === 'authentic' ? 'AUTHENTIC' : 'FAKE'}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          Analyzed: {new Date().toLocaleString()}
+                        </Badge>
+                      </div>
+                      <div className="p-3 bg-muted/30 rounded-md border">
+                        <p className="text-sm text-foreground">
+                          <strong>Article Text:</strong>
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
+                          {articleText}
                         </p>
                       </div>
                     </div>
-                    <Badge 
-                      variant={result.prediction === 'authentic' ? 'default' : 'destructive'}
-                      className={result.prediction === 'authentic' 
-                        ? 'bg-success text-success-foreground' 
-                        : 'bg-destructive text-destructive-foreground'
-                      }
-                    >
-                      {result.confidence}% Confidence
-                    </Badge>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold mb-2 text-foreground">Analysis Factors:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {result.keyFactors.map((factor, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {factor}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Feedback Section */}
-                  <div className="mt-6 pt-4 border-t border-border">
-                    <h4 className="font-semibold mb-3 text-foreground">Was this analysis correct?</h4>
-                    <div className="flex gap-3">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => provideFeedback('correct')}
-                        className="flex items-center gap-2 hover:bg-success/10 hover:border-success"
-                      >
-                        <ThumbsUp className="w-4 h-4" />
-                        Correct
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => provideFeedback('incorrect')}
-                        className="flex items-center gap-2 hover:bg-destructive/10 hover:border-destructive"
-                      >
-                        <ThumbsDown className="w-4 h-4" />
-                        Incorrect
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </AlertDescription>
+                </Alert>
+              </div>
             )}
           </CardContent>
         </Card>
