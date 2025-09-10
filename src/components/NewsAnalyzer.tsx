@@ -51,17 +51,63 @@ const NewsAnalyzer = () => {
     const analysisId = Date.now().toString();
     setCurrentAnalysisId(analysisId);
     
-    // Simulate ML analysis
+    // Analyze the actual content
     setTimeout(() => {
+      const text = articleText.toLowerCase();
+      
+      // Simple heuristic analysis based on content patterns
+      const fakeIndicators = [
+        'breaking:', 'shocking', 'you won\'t believe', 'doctors hate', 'secret that',
+        'government doesn\'t want', 'they don\'t want you to know', 'miracle cure',
+        'instant', 'guaranteed', 'exclusive', 'leaked', 'exposed', 'revealed'
+      ];
+      
+      const authenticIndicators = [
+        'according to', 'research shows', 'study finds', 'data indicates',
+        'experts say', 'officials report', 'investigation reveals', 'confirmed by',
+        'published in', 'peer-reviewed', 'reuters', 'associated press', 'bbc', 'cnn'
+      ];
+      
+      let fakeScore = 0;
+      let authenticScore = 0;
+      
+      // Check for fake indicators
+      fakeIndicators.forEach(indicator => {
+        if (text.includes(indicator)) fakeScore += 1;
+      });
+      
+      // Check for authentic indicators  
+      authenticIndicators.forEach(indicator => {
+        if (text.includes(indicator)) authenticScore += 1;
+      });
+      
+      // Check text quality indicators
+      const sentences = text.split('.').filter(s => s.trim().length > 0);
+      const avgSentenceLength = sentences.reduce((acc, s) => acc + s.length, 0) / sentences.length;
+      const hasProperCapitalization = articleText !== articleText.toLowerCase() && articleText !== articleText.toUpperCase();
+      const hasProperPunctuation = /[.!?]/.test(articleText);
+      
+      if (avgSentenceLength > 50 && hasProperCapitalization && hasProperPunctuation) {
+        authenticScore += 2;
+      }
+      
+      if (avgSentenceLength < 20 || !hasProperCapitalization || !hasProperPunctuation) {
+        fakeScore += 1;
+      }
+      
+      // Determine result based on scores
+      const isAuthentic = authenticScore > fakeScore;
+      const confidence = Math.min(95, Math.max(65, 75 + (Math.abs(authenticScore - fakeScore) * 5)));
+      
       const mockResult: AnalysisResult = {
-        prediction: Math.random() > 0.5 ? 'authentic' : 'fake',
-        confidence: Math.floor(Math.random() * 30) + 70, // 70-99%
+        prediction: isAuthentic ? 'authentic' : 'fake',
+        confidence: confidence,
         keyFactors: [
-          "Source credibility analysis",
-          "Language pattern recognition", 
-          "Fact-checking cross-reference",
-          "Sentiment analysis",
-          "Writing style verification"
+          "Content pattern analysis",
+          "Language credibility check", 
+          "Source reliability indicators",
+          "Writing quality assessment",
+          "Sensationalism detection"
         ]
       };
       
