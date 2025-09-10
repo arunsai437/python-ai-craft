@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, AlertTriangle, Brain, ThumbsUp, ThumbsDown, Database } from "lucide-react";
+import { Loader2, CheckCircle, AlertTriangle, Brain, ThumbsUp, ThumbsDown, Database, History, Eye, EyeOff } from "lucide-react";
 
 interface AnalysisResult {
   prediction: 'authentic' | 'fake';
@@ -25,6 +25,7 @@ const NewsAnalyzer = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Load saved analyses from localStorage on component mount
   useEffect(() => {
@@ -227,71 +228,98 @@ const NewsAnalyzer = () => {
           </CardContent>
         </Card>
         
-        {/* Analysis History */}
+        {/* History Toggle Button */}
         {savedAnalyses.length > 0 && (
-          <div className="mt-8">
-            <div className="flex items-center gap-3 mb-6">
-              <Database className="w-6 h-6 text-primary" />
-              <h3 className="text-2xl font-bold text-foreground">Analysis History</h3>
-              <Badge variant="secondary">{savedAnalyses.length}</Badge>
-            </div>
-            
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {savedAnalyses.map((analysis) => (
-                <Card key={analysis.id} className="bg-card/30 backdrop-blur border-border/30">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          {analysis.result.prediction === 'authentic' ? 
-                            <CheckCircle className="w-4 h-4 text-success" /> : 
-                            <AlertTriangle className="w-4 h-4 text-destructive" />
-                          }
-                          <span className="font-semibold capitalize text-foreground">
-                            {analysis.result.prediction}
-                          </span>
-                          <Badge 
-                            variant={analysis.result.prediction === 'authentic' ? 'default' : 'destructive'}
-                            className="text-xs"
-                          >
-                            {analysis.result.confidence}%
-                          </Badge>
-                          {analysis.userFeedback && (
-                            <Badge 
-                              variant="outline" 
-                              className={`text-xs ${
-                                analysis.userFeedback === 'correct' 
-                                  ? 'text-success border-success' 
-                                  : 'text-destructive border-destructive'
-                              }`}
-                            >
-                              {analysis.userFeedback === 'correct' ? (
-                                <>
-                                  <ThumbsUp className="w-3 h-3 mr-1" />
-                                  Verified
-                                </>
-                              ) : (
-                                <>
-                                  <ThumbsDown className="w-3 h-3 mr-1" />
-                                  Disputed
-                                </>
-                              )}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {analysis.text}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {new Date(analysis.timestamp).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+          <div className="mt-8 flex justify-center">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex items-center gap-2"
+            >
+              <History className="w-4 h-4" />
+              {showHistory ? (
+                <>
+                  <EyeOff className="w-4 h-4" />
+                  Hide Analysis History
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4" />
+                  View Analysis History ({savedAnalyses.length})
+                </>
+              )}
+            </Button>
           </div>
+        )}
+        
+        {/* Analysis History */}
+        {showHistory && savedAnalyses.length > 0 && (
+          <Card className="mt-6 bg-card/30 backdrop-blur border-border/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <Database className="w-5 h-5 text-primary" />
+                Analysis History
+                <Badge variant="secondary">{savedAnalyses.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {savedAnalyses.map((analysis) => (
+                  <Card key={analysis.id} className="bg-background/50 border-border/50">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            {analysis.result.prediction === 'authentic' ? 
+                              <CheckCircle className="w-4 h-4 text-success" /> : 
+                              <AlertTriangle className="w-4 h-4 text-destructive" />
+                            }
+                            <span className="font-semibold capitalize text-foreground">
+                              {analysis.result.prediction}
+                            </span>
+                            <Badge 
+                              variant={analysis.result.prediction === 'authentic' ? 'default' : 'destructive'}
+                              className="text-xs"
+                            >
+                              {analysis.result.confidence}%
+                            </Badge>
+                            {analysis.userFeedback && (
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs ${
+                                  analysis.userFeedback === 'correct' 
+                                    ? 'text-success border-success' 
+                                    : 'text-destructive border-destructive'
+                                }`}
+                              >
+                                {analysis.userFeedback === 'correct' ? (
+                                  <>
+                                    <ThumbsUp className="w-3 h-3 mr-1" />
+                                    Verified
+                                  </>
+                                ) : (
+                                  <>
+                                    <ThumbsDown className="w-3 h-3 mr-1" />
+                                    Disputed
+                                  </>
+                                )}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {analysis.text}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {new Date(analysis.timestamp).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </section>
