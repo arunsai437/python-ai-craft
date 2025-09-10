@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, AlertTriangle, Brain } from "lucide-react";
+import { Loader2, CheckCircle, AlertTriangle, Brain, ThumbsUp, ThumbsDown, Database } from "lucide-react";
 
 interface AnalysisResult {
   prediction: 'authentic' | 'fake';
@@ -11,16 +11,43 @@ interface AnalysisResult {
   keyFactors: string[];
 }
 
+interface SavedAnalysis {
+  id: string;
+  text: string;
+  result: AnalysisResult;
+  timestamp: number;
+  userFeedback?: 'correct' | 'incorrect';
+}
+
 const NewsAnalyzer = () => {
   const [articleText, setArticleText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
+  const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null);
+
+  // Load saved analyses from localStorage on component mount
+  useEffect(() => {
+    const saved = localStorage.getItem('news-analyses');
+    if (saved) {
+      setSavedAnalyses(JSON.parse(saved));
+    }
+  }, []);
+
+  // Save analyses to localStorage whenever savedAnalyses changes
+  useEffect(() => {
+    localStorage.setItem('news-analyses', JSON.stringify(savedAnalyses));
+  }, [savedAnalyses]);
 
   const analyzeArticle = async () => {
     if (!articleText.trim()) return;
     
     setIsAnalyzing(true);
     setResult(null);
+    
+    // Generate unique ID for this analysis
+    const analysisId = Date.now().toString();
+    setCurrentAnalysisId(analysisId);
     
     // Simulate ML analysis
     setTimeout(() => {
@@ -35,9 +62,31 @@ const NewsAnalyzer = () => {
           "Writing style verification"
         ]
       };
+      
+      // Save analysis
+      const newAnalysis: SavedAnalysis = {
+        id: analysisId,
+        text: articleText.trim(),
+        result: mockResult,
+        timestamp: Date.now()
+      };
+      
+      setSavedAnalyses(prev => [newAnalysis, ...prev]);
       setResult(mockResult);
       setIsAnalyzing(false);
     }, 2000);
+  };
+
+  const provideFeedback = (feedback: 'correct' | 'incorrect') => {
+    if (!currentAnalysisId) return;
+    
+    setSavedAnalyses(prev => 
+      prev.map(analysis => 
+        analysis.id === currentAnalysisId 
+          ? { ...analysis, userFeedback: feedback }
+          : analysis
+      )
+    );
   };
 
   const getResultColor = () => {
@@ -147,11 +196,103 @@ const NewsAnalyzer = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Feedback Section */}
+                  <div className="mt-6 pt-4 border-t border-border">
+                    <h4 className="font-semibold mb-3 text-foreground">Was this analysis correct?</h4>
+                    <div className="flex gap-3">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => provideFeedback('correct')}
+                        className="flex items-center gap-2 hover:bg-success/10 hover:border-success"
+                      >
+                        <ThumbsUp className="w-4 h-4" />
+                        Correct
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => provideFeedback('incorrect')}
+                        className="flex items-center gap-2 hover:bg-destructive/10 hover:border-destructive"
+                      >
+                        <ThumbsDown className="w-4 h-4" />
+                        Incorrect
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}
           </CardContent>
         </Card>
+        
+        {/* Analysis History */}
+        {savedAnalyses.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-6">
+              <Database className="w-6 h-6 text-primary" />
+              <h3 className="text-2xl font-bold text-foreground">Analysis History</h3>
+              <Badge variant="secondary">{savedAnalyses.length}</Badge>
+            </div>
+            
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {savedAnalyses.map((analysis) => (
+                <Card key={analysis.id} className="bg-card/30 backdrop-blur border-border/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          {analysis.result.prediction === 'authentic' ? 
+                            <CheckCircle className="w-4 h-4 text-success" /> : 
+                            <AlertTriangle className="w-4 h-4 text-destructive" />
+                          }
+                          <span className="font-semibold capitalize text-foreground">
+                            {analysis.result.prediction}
+                          </span>
+                          <Badge 
+                            variant={analysis.result.prediction === 'authentic' ? 'default' : 'destructive'}
+                            className="text-xs"
+                          >
+                            {analysis.result.confidence}%
+                          </Badge>
+                          {analysis.userFeedback && (
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                analysis.userFeedback === 'correct' 
+                                  ? 'text-success border-success' 
+                                  : 'text-destructive border-destructive'
+                              }`}
+                            >
+                              {analysis.userFeedback === 'correct' ? (
+                                <>
+                                  <ThumbsUp className="w-3 h-3 mr-1" />
+                                  Verified
+                                </>
+                              ) : (
+                                <>
+                                  <ThumbsDown className="w-3 h-3 mr-1" />
+                                  Disputed
+                                </>
+                              )}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {analysis.text}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {new Date(analysis.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
