@@ -6,6 +6,10 @@ const Hero = () => {
     document.getElementById('analyzer')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const scrollToTechStack = () => {
+    document.getElementById('tech-stack')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-neural overflow-hidden">
       {/* Background Image */}
@@ -47,6 +51,7 @@ const Hero = () => {
             Analyze News Article
           </Button>
           <Button 
+            onClick={scrollToTechStack}
             variant="outline" 
             size="lg" 
             className="border-primary/50 text-primary hover:bg-primary/10 transition-all duration-300 text-lg px-8 py-6"
@@ -58,12 +63,13 @@ const Hero = () => {
         {/* Tech Stack Tags */}
         <div className="mt-12 flex flex-wrap justify-center gap-3">
           {['Python', 'Scikit-learn', 'Flask', 'NLP', 'Pandas', 'Machine Learning'].map((tech) => (
-            <span 
+            <button 
               key={tech}
-              className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm font-medium text-primary"
+              onClick={scrollToTechStack}
+              className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm font-medium text-primary hover:bg-primary/20 transition-colors cursor-pointer"
             >
               {tech}
-            </span>
+            </button>
           ))}
         </div>
       </div>

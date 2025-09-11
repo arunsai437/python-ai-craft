@@ -43,7 +43,7 @@ const TechStack = () => {
   ];
 
   return (
-    <section className="py-20 px-6 bg-gradient-neural">
+    <section id="tech-stack" className="py-20 px-6 bg-gradient-neural">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <Code2 className="w-16 h-16 mx-auto mb-6 text-primary" />
