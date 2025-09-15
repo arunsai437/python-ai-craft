@@ -7,10 +7,10 @@ const Hero = () => {
   };
 
   const scrollToTechStack = () => {
-    console.log('Scrolling to tech stack...');
     const element = document.getElementById('tech-stack');
-    console.log('Tech stack element found:', element);
-    element?.scrollIntoView({ behavior: 'smooth' });
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (

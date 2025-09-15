@@ -10,6 +10,8 @@ interface AnalysisResult {
   prediction: 'authentic' | 'fake';
   confidence: number;
   keyFactors: string[];
+  correction?: string;
+  additionalInfo?: string;
 }
 
 interface SavedAnalysis {
@@ -99,6 +101,18 @@ const NewsAnalyzer = () => {
       const isAuthentic = authenticScore > fakeScore;
       const confidence = Math.min(95, Math.max(65, 75 + (Math.abs(authenticScore - fakeScore) * 5)));
       
+      // Generate correction or additional info based on result
+      let correction: string | undefined;
+      let additionalInfo: string | undefined;
+      
+      if (!isAuthentic) {
+        // For fake news, provide correction
+        correction = "This article appears to contain misleading information. Key concerns include sensationalized language, lack of credible sources, and inflammatory content designed to provoke emotional responses rather than inform. Always verify news through multiple reputable sources before sharing.";
+      } else {
+        // For authentic news, provide additional context
+        additionalInfo = "This article demonstrates good journalistic practices with credible sourcing, balanced reporting, and factual presentation. For complete understanding, consider reading related coverage from other reputable news sources and checking for any recent updates or developments on this topic.";
+      }
+      
       const mockResult: AnalysisResult = {
         prediction: isAuthentic ? 'authentic' : 'fake',
         confidence: confidence,
@@ -108,7 +122,9 @@ const NewsAnalyzer = () => {
           "Source reliability indicators",
           "Writing quality assessment",
           "Sensationalism detection"
-        ]
+        ],
+        correction,
+        additionalInfo
       };
       
       // Save analysis
@@ -245,6 +261,24 @@ const NewsAnalyzer = () => {
                         ))}
                       </div>
                     </div>
+
+                    {/* Correction or Additional Info */}
+                    {(result.correction || result.additionalInfo) && (
+                      <div className="pt-4 border-t border-border">
+                        <h4 className="font-semibold mb-3">
+                          {result.prediction === 'fake' ? 'Fact Check & Correction' : 'Additional Information'}
+                        </h4>
+                        <div className={`p-4 rounded-lg border ${
+                          result.prediction === 'fake' 
+                            ? 'bg-destructive/5 border-destructive/20 text-destructive-foreground' 
+                            : 'bg-success/5 border-success/20 text-success-foreground'
+                        }`}>
+                          <p className="text-sm leading-relaxed">
+                            {result.correction || result.additionalInfo}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Feedback Section */}
                     <div className="pt-4 border-t border-border">
